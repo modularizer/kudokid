@@ -1,12 +1,11 @@
-import json
 import time
 import datetime
 from pathlib import Path
+import threading
+import webbrowser
 
 import requests
 from socketwrench import serve, Response
-import threading
-import webbrowser
 import yaml
 
 
@@ -37,6 +36,22 @@ class Scopes:
     all_read_scopes = (read, read_all, profile_read_all, activity_read, activity_read_all)
     all = (read, read_all, profile_read_all, profile_write, activity_read, activity_read_all, activity_write)
 
+
+class Streams:
+    time = "time"
+    latlng = "latlng"
+    distance = "distance"
+    altitude = "altitude"
+    velocity_smooth = "velocity_smooth"
+    heartrate = "heartrate"
+    cadence = "cadence"
+    watts = "watts"
+    temp = "temp"
+    moving = "moving"
+    grade_smooth = "grade_smooth"
+
+    basic = [time, latlng, distance, altitude, velocity_smooth, heartrate, moving, grade_smooth]
+    all = [time, latlng, distance, altitude, velocity_smooth, heartrate, cadence, watts, temp, moving, grade_smooth]
 
 class KudoKidAPI:
     base_url = "https://www.strava.com/api/v3"
@@ -215,6 +230,9 @@ class KudoKidAPI:
     def get_activity(self, activity_id):
         return self.get("/activities/{id}", {"id": activity_id})
 
+    def get_activity_streams(self, activity_id, keys: list[str] = Streams.basic):
+        return self.get(f"/activities/{activity_id}/streams", {"keys": ",".join(keys), "key_by_type": True})
+
 
 if __name__ == "__main__":
     # import logging
@@ -222,3 +240,5 @@ if __name__ == "__main__":
 
     ku = KudoKidAPI()
     activities = ku.list_activities()
+    last_activity = ku.get_activity(activities[0]["id"])
+    last_activity_streams = ku.get_activity_streams(last_activity["id"], Streams.all)
