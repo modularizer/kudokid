@@ -1,4 +1,3 @@
 secrets.yaml
-athlete_info.yaml
 .idea
-/filestore
+*.db
