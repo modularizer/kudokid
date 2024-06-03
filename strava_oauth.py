@@ -10,8 +10,20 @@ import requests
 from socketwrench import serve, Response
 import yaml
 
-from api_cache import API
-from strava_api import Scopes, strava_rate_limits
+class Scopes:
+    """Enumerates the Strava API scopes which we have used/included in this project.
+    For ease of use, we just request all scopes, but if you don't need all of them, you can request only the ones you need.
+    """
+    read = "read"
+    read_all = "read_all"
+    profile_read_all = "profile:read_all"
+    profile_write = "profile:write"
+    activity_read = "activity:read"
+    activity_read_all = "activity:read_all"
+    activity_write = "activity:write"
+
+    all_read_scopes = (read, read_all, profile_read_all, activity_read, activity_read_all)
+    all = (read, read_all, profile_read_all, profile_write, activity_read, activity_read_all, activity_write)
 
 
 class OauthWebServer:
@@ -84,8 +96,6 @@ class StravaOauth(ABC):
             yaml.dump(self.secrets, f)
         self.expires_at = self.secrets.get("expires_at", time.time())
         self.set_access_token(self.access_token)
-        self.api.headers["Authorization"] = f"Bearer {self.access_token}"
-
     @abstractmethod
     def set_access_token(self, access_token):
         pass

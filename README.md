@@ -2,9 +2,8 @@
 Playing with the Strava API. There really is no solid purpose or goal to this yet, aside from just seeing what Strava API has to offer.
 Think of this repo as a playground, not actually accomplishing any specific task.
 
-
 # Setup
-### Install Requirements
+## Install Requirements
 1. Install Python >= 3.10
   * [Install from python.org](https://www.python.org/downloads/)
     * See [help](https://www.digitalocean.com/community/tutorials/install-python-windows-10)
@@ -28,7 +27,7 @@ Think of this repo as a playground, not actually accomplishing any specific task
   * you should see `(venv)` at the beginning of your command prompt
   * run `pip install -r requirements.txt`
 
-### First Run
+## First Run
 With your virtual environment setup and activated, you should be able to run the program.
 1. `python -m kudokid` or `python kudokid.py`
 
@@ -37,15 +36,30 @@ With your virtual environment setup and activated, you should be able to run the
    ii. prompt you to enter your 'Client ID' and 'Client Secret' (which will then get saved to a new file named `secrets.yaml`)
    iii. open a browser window for you to authenticate your app with Strava (which will then save your access token and refresh token to `secrets.yaml`)
 
-# Developing
-Once authenticated, you can start playing with the Strava API by modifying `kudokid.py`, extending it, or calling functions.
-
-## NOTE: I highly recommend using `Run in Python Console` in PyCharm to run the program. It is sort of a mix between REPL and debugger functionalities and allows for you to easily inspect your variables and run code snippets in the context of the program.
+## Developing
+Once authenticated, you can start playing with the Strava API. See [Code Structure](#code-structure) for more information on how the code is structured.
+* I would recommend starting either in `kudokid.py` or `bare_strava_api.py` to start playing with the Strava API
+* I highly recommend using `Run in Python Console` in PyCharm to run the program. It is sort of a mix between REPL and debugger functionalities and allows for you to easily inspect your variables and run code snippets in the context of the program.
 
 # Resources From Strava
 * [Getting Started](https://developers.strava.com/docs/getting-started/)
 * [Authenticating with OAuth 2.0](https://developers.strava.com/docs/authentication/)
 * [Strava API Reference](https://developers.strava.com/docs/reference/)
+
+### Key Points
+* athlete id or activity id is the key to most of the API calls, so call `get_athlete()` and `list_activities()` to get started
+
+# Code Structure
+* `api_cache.py` - handles caching API responses in a SQLite database to avoid rate limits
+  * not in any way specific to strava, could be used for any API
+* `strava_oauth.py` - handles the OAuth2.0 authentication with Strava
+  * runs a background thread to refresh the access token when it expires
+  * if the refresh token is expired, it will open up a browser window for you to re-authenticate Strava
+* `bare_strava_api.py` - combines the API cache and the Strava OAuth to provide an easy way to make API calls
+  * enumerates _some_ of the Strava API endpoints and types
+  * adds a little bit of ease of use to the Strava API
+  * `BareStravaAPI` is a class intended to be generic and useful for anyone to develop and relatively free of my own goals with the Strava API
+* `kudokid.py` - this is intended to be my clutter-free playground to start developing features around the Strava API
 
 # Data Storage
 ### Storing Credentials
@@ -76,18 +90,4 @@ This `requests` table looks like this:
 | id | called_at        | called_at_str               | url                                   | headers | params | method | response_code | response_json                        | response_headers                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
 |----|------------------|-----------------------------|---------------------------------------|---------|--------|--------|---------------|--------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 1  | 1717262808.07453 | 2024-06-01 10:26:48.074527  | https://www.strava.com/api/v3/athlete |         |        | GET    | 200           | {"id": 23032, "username": "modu... } | {"Content-Type": "application/json; charset=utf-8", "Transfer-Encoding": "chunked", "Connection": "keep-alive", "Date": "Sat, 01 Jun 2024 17:26:48 GMT", "X-Content-Type-Options": "nosniff", "X-Permitted-Cross-Domain-Policies": "none", "Via": "1.1 linkerd, 1.1 linkerd, 1.1 8e16c7938d4a57727005da6f93b9da6a.cloudfront.net (CloudFront)", "ETag": "W/\"f37c6b7e34e4570ca4e2\"", "Vary": "Accept, Origin", "Status": "200 OK", "X-Request-Id": "41a0e296-1f34-4d", "Cache-Control": "max-age=0, private, must-revalidate", "Referrer-Policy": "strict-origin-when-cross-origin", "X-Frame-Options": "DENY", "Content-Encoding": "gzip", "X-XSS-Protection": "1; mode=block", "X-RateLimit-Limit": "200,2000", "X-RateLimit-Usage": "1,211", "X-Download-Options": "noopen", "X-ReadRateLimit-Limit": "100,1000", "X-ReadRateLimit-Usage": "1,211", "X-Cache": "Miss from cloudfront", "X-Amz-Cf-Pop": "LAX50-P3", "X-Amz-Cf-Id": "aGamSBHtYYowW_sEm_25r9H=="}  |
-
-
-
-# Code Structure
-* `api_cache.py` - handles caching API responses in a SQLite database to avoid rate limits
-  * not in any way specific to strava, could be used for any API
-* `strava_oauth.py` - handles the OAuth2.0 authentication with Strava
-  * runs a background thread to refresh the access token when it expires
-  * if the refresh token is expired, it will open up a browser window for you to re-authenticate Strava
-* `bare_strava_api.py` - combines the API cache and the Strava OAuth to provide an easy way to make API calls
-  * enumerates _some_ of the Strava API endpoints and types
-  * adds a little bit of ease of use to the Strava API
-  * `BareStravaAPI` is a class intended to be generic and useful for anyone to develop and relatively free of my own goals with the Strava API
-* `kudokid.py` - this is intended to be my clutter-free playground to start developing features around the Strava API
 

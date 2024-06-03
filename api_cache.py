@@ -39,19 +39,30 @@ class APICache:
             response_headers JSON
         )""")
 
-    def retrieve_cached_get(self, url, params=unspecified, headers=unspecified, max_age=None):
-        return self.retrieve_cached_request("GET", url, params=params, headers=headers, max_age=max_age)
+    def retrieve_cached_get(self, url, params=unspecified, headers=unspecified, max_age=None, limit=1, order_by="called_at DESC", **kwargs):
+        return self.retrieve_cached_request("GET", url, params=params, headers=headers, max_age=max_age, limit=limit, order_by=order_by, **kwargs)
 
-    def retrieve_cached_request(self, method, url, params=unspecified, headers=unspecified, max_age=None):
+    def retrieve_cached_request(self, method, url, params=unspecified, headers=unspecified, max_age=None, limit=1, order_by="called_at DESC", **kwargs):
         condition = {
             "url": url,
             "method": method,
         }
+        condition.update(kwargs)
         if params is not self.unspecified:
             condition["params"] = json.dumps({k: params[k] for k in sorted(params)}) if params else None
         if headers is not self.unspecified:
             condition["headers"] = json.dumps({k: headers[k] for k in sorted(headers)}) if headers else None
-        result = self.select(columns="response_json", max_age=max_age, limit=1, **condition)
+        result = self.select(columns="response_json", max_age=max_age, limit=limit, order_by=order_by, **condition)
+        if isinstance(result, str):
+            try:
+                result = json.loads(result)
+            except json.JSONDecodeError:
+                pass
+        elif isinstance(result, list) and all(isinstance(x, str) for x in result):
+            try:
+                result = [json.loads(x) for x in result]
+            except json.JSONDecodeError:
+                pass
         if result is None:
             return None
         return result
